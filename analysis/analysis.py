@@ -17,3 +17,27 @@ df.head()
 # %%
 df.columns
 # %%
+df.describe()
+# %%
+
+df.info()
+# %%
+
+# soma de nulos
+
+df.isnull().sum()
+# %%
+# limpando nulos e verificando mudanças
+
+df.drop(['id', 'host_name','last_review'], axis=1, inplace=True)
+
+df.head()
+# %%
+df.fillna({'reviews_per_month':0}, inplace=True)
+
+# %%
+
+df.fillna({'name':'unknown'}, inplace=True)
+
+df.isnull().sum()
+# %%
