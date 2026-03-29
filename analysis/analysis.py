@@ -54,6 +54,10 @@ sns.histplot(
     edgecolor='black'
 )
 
+plt.title('Distribuição de preços (com outliers)')
+plt.xlabel('Preço')
+plt.ylabel('Frequência')
+
 plt.savefig("../img/distribuicao_preco_com_outliers.png")
 
 plt.show()
