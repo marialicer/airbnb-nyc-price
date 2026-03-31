@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
 # %%
 
 # carregando o df 
@@ -50,7 +51,7 @@ plt.figure(figsize=(8,5))
 sns.histplot(
     df["price"],
     kde=True,
-    color="#9E219E",
+    color="#f56505",
     edgecolor='black'
 )
 
@@ -99,7 +100,7 @@ plt.figure(figsize=(8,5))
 sns.histplot(
     df_sem_outliers["price"],
     kde=True,
-    color="#9E219E",
+    color="#f56505",
     edgecolor='black'
 )
 
@@ -111,3 +112,63 @@ plt.savefig("../img/distribuicao_preco_sem_outliers.png")
 
 plt.show()
 # %%
+
+# identificar e plotar os bairros com maior média de preços
+
+media_precos = df.groupby('neighbourhood_group', as_index=False)['price'].mean()
+media_precos.head().sort_values('price', ascending=False)
+# %%
+
+paleta_cores = sns.color_palette("YlOrBr_r")
+
+ax = sns.barplot(
+    data=media_precos,
+    x='neighbourhood_group',
+    y='price',
+    order=['Manhattan', 'Brooklyn', 'Staten Island', 'Queens', 'Bronx'],
+    palette=paleta_cores
+)
+
+plt.title('Média de preços por bairros')
+plt.xlabel('Bairros')
+plt.ylabel('Média de preços')
+
+
+for p in ax.patches:
+    height = p.get_height()
+    ax.text(
+        p.get_x() + p.get_width() / 2,
+        height + 0.1,
+        f'{height:.1f}',
+        ha='center'
+    )
+
+plt.savefig("../img/media_precos_bairros.png")
+
+plt.show()
+# %%
+
+#plotar preço por latitude e longitude
+
+plt.figure(figsize=(10, 8))
+
+plt.scatter(
+    df_sem_outliers['longitude'],
+    df_sem_outliers['latitude'],
+    c=df_sem_outliers['price'],
+    cmap='YlOrBr',
+    s=10
+)
+
+plt.colorbar(label='Preço ($)')
+
+plt.title('Distribuição geográfica dos preços de Airbnb em NYC')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+
+plt.savefig("../img/mapa_precos_geografico.png")
+
+plt.show()
+# %%
+
+
