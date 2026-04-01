@@ -194,18 +194,105 @@ media_precos_bairros = media_precos_bairros[media_precos_bairros['qtd_imoveis'] 
 
 top10 = media_precos_bairros.sort_values('price', ascending=False).head(10)
 
-top10.head()
 # %%
+
+top10 = top10.sort_values(by='price', ascending=True)
 
 plt.figure(figsize=(10,6))
 
 plt.barh(
-    
+    top10['neighbourhood'],
+    top10['price'],
+    color = 'khaki'
 )
+
+for index, value in enumerate(top10['price']):
+    plt.text(
+        value,          # posição no eixo x (final da barra)
+        index,          # posição no eixo y
+        f'{value:.0f}', # texto (formatado com 2 casas decimais)
+        va='center'     # alinhamento vertical
+    )
 
 plt.title('Top 10 bairros mais caros (com volume relevante)')
 plt.xlabel('Preço médio')
 plt.ylabel('Bairro')
+
+plt.savefig("../img/media_bairros_caros.png")
+
+plt.show()
+# %%
+
+reviews_price = df_sem_outliers.groupby('number_of_reviews', as_index=False)['price'].mean()
+
+# %%
+
+# plotar relação entre reviews e preço
+
+plt.scatter(
+    reviews_price['number_of_reviews'],
+    reviews_price['price'],
+    alpha=0.5,
+    color = 'orange'
+)
+
+plt.title('Relação entre número de reviews e preço')
+plt.xlabel('Número de reviews')
+plt.ylabel('Preço médio')
+
+plt.show()
+# %%
+
+correlacao = df_sem_outliers['number_of_reviews'].corr(df_sem_outliers['price'])
+print(correlacao)
+# %%
+
+# perfis de airbnbs (clusters)
+
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+# %%
+
+df_numerico = df_sem_outliers.drop(columns=[
+    'host_id',
+    'latitude',
+    'longitude'
+])
+
+# %%
+
+df_numerico = df_numerico.select_dtypes(include=['int64', 'float64'])
+
+# %%
+
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(df_numerico)
+# %%
+
+kmeans = KMeans(n_clusters=3, random_state=42) # Exemplo com K=3
+clusters = kmeans.fit_predict(scaled_data)
+# %%
+
+df_sem_outliers['cluster'] = clusters
+
+# %%
+centroides = pd.DataFrame(
+    kmeans.cluster_centers_,
+    columns=df_numerico.columns
+)
+
+centroides
+# %%
+
+df_sem_outliers.head()
+# %%
+
+cores = ['#FFA500', '#FFD700', '#FF4500']
+
+centroides.T.plot(kind='bar', figsize=(10,6), color=cores )
+plt.title("Perfis dos clusters")
+
+plt.savefig("../img/centroides_clusters.png")
 
 plt.show()
 # %%
