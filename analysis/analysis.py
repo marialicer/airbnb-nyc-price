@@ -14,6 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
+from sklearn.linear_model import LinearRegression
 
 # %%
 
@@ -384,7 +385,7 @@ if 'cluster' in X.columns:
 # %%
 
 top_features = [col for col in top_features if col in X.columns]
-
+print(X.columns)
 # %%
 
 X = X[top_features]
@@ -417,5 +418,3 @@ print(rmse)
 r2 = r2_score(y_test, y_pred)
 print(r2)
 # %%
-
-
