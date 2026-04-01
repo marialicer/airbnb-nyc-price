@@ -6,6 +6,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+
 # %%
 
 # carregando o df 
@@ -208,10 +217,10 @@ plt.barh(
 
 for index, value in enumerate(top10['price']):
     plt.text(
-        value,          # posição no eixo x (final da barra)
-        index,          # posição no eixo y
-        f'{value:.0f}', # texto (formatado com 2 casas decimais)
-        va='center'     # alinhamento vertical
+        value,      
+        index,         
+        f'{value:.0f}', 
+        va='center'     
     )
 
 plt.title('Top 10 bairros mais caros (com volume relevante)')
@@ -249,10 +258,6 @@ print(correlacao)
 
 # perfis de airbnbs (clusters)
 
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-# %%
-
 df_numerico = df_sem_outliers.drop(columns=[
     'host_id',
     'latitude',
@@ -289,10 +294,128 @@ df_sem_outliers.head()
 
 cores = ['#FFA500', '#FFD700', '#FF4500']
 
-centroides.T.plot(kind='bar', figsize=(10,6), color=cores )
+centroides.T.plot(kind='bar', figsize=(12,6), color=cores )
 plt.title("Perfis dos clusters")
+
+plt.legend(title='Clusters')
+plt.tight_layout()
 
 plt.savefig("../img/centroides_clusters.png")
 
 plt.show()
 # %%
+
+# treinar modelo para responder quais variáveis impactam mais no preço
+
+X = df_sem_outliers.drop(columns=[
+    'price',
+    'host_id',
+    'name'
+])
+
+y = df_sem_outliers['price']
+# %%
+
+X = pd.get_dummies(X, drop_first=True)
+
+# %%
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# %%
+
+modelo = RandomForestRegressor(random_state=42)
+modelo.fit(X_train, y_train)
+# %%
+
+importancias = pd.Series(
+    modelo.feature_importances_,
+    index=X.columns
+).sort_values(ascending=False)
+
+importancias
+# %%
+importancias.head(10).plot(kind='barh')
+plt.title("Top 10 variáveis que impactam o preço")
+plt.show()
+# %%
+
+y_pred = modelo.predict(X_test)
+
+# %%
+# avaliando o modelo
+
+mae = mean_absolute_error(y_test, y_pred)
+print(mae)
+# %%
+
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+print(rmse)
+# %%
+
+r2 = r2_score(y_test, y_pred)
+print(r2)
+# %%
+
+# usando os clusters como variáveis
+
+df_sem_outliers['cluster'] = kmeans.labels_
+# %%
+
+# pegando as melhores variáveis
+
+X = df_sem_outliers.drop(columns=[
+    'price',
+    'host_id',
+    'name'
+])
+
+X = pd.get_dummies(X, drop_first=True)
+
+top_features = importancias.head(10).index.tolist()
+
+# %%
+
+if 'cluster' in X.columns:
+    top_features.append('cluster')
+
+# %%
+
+top_features = [col for col in top_features if col in X.columns]
+
+# %%
+
+X = X[top_features]
+
+y =  df_sem_outliers['price']
+# %%
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+# %%
+
+modelo2 = RandomForestRegressor(random_state=42)
+modelo2.fit(X_train, y_train)
+# %%
+
+y_pred = modelo2.predict(X_test)
+# %%
+
+# avaliando o modelo após seleção de features
+
+mae = mean_absolute_error(y_test, y_pred)
+print(mae)
+# %%
+
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+print(rmse)
+# %%
+
+r2 = r2_score(y_test, y_pred)
+print(r2)
+# %%
+
+
