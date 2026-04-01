@@ -113,10 +113,10 @@ plt.savefig("../img/distribuicao_preco_sem_outliers.png")
 plt.show()
 # %%
 
-# identificar e plotar os bairros com maior média de preços
+# identificar e plotar os distritos com maior média de preços
 
-media_precos = df.groupby('neighbourhood_group', as_index=False)['price'].mean()
-media_precos.head().sort_values('price', ascending=False)
+media_precos = df_sem_outliers.groupby('neighbourhood_group', as_index=False)['price'].mean()
+media_precos.sort_values('price', ascending=False)
 # %%
 
 paleta_cores = sns.color_palette("YlOrBr_r")
@@ -129,8 +129,8 @@ ax = sns.barplot(
     palette=paleta_cores
 )
 
-plt.title('Média de preços por bairros')
-plt.xlabel('Bairros')
+plt.title('Média de preços por distritos')
+plt.xlabel('Distritos')
 plt.ylabel('Média de preços')
 
 
@@ -169,6 +169,43 @@ plt.ylabel('Latitude')
 plt.savefig("../img/mapa_precos_geografico.png")
 
 plt.show()
+
 # %%
 
+# plotar bairros mais caros
 
+media_precos_bairros = df_sem_outliers.groupby('neighbourhood', as_index=False)['price'].mean()
+media_precos_bairros.sort_values('price',ascending=False)
+
+# %%
+
+contagem = df_sem_outliers['neighbourhood'].value_counts()
+
+media_precos_bairros['qtd_imoveis'] = media_precos_bairros['neighbourhood'].map(contagem)
+
+# %%
+
+media_precos_bairros.head()
+
+# %%
+
+media_precos_bairros = media_precos_bairros[media_precos_bairros['qtd_imoveis'] > 50]
+# %%
+
+top10 = media_precos_bairros.sort_values('price', ascending=False).head(10)
+
+top10.head()
+# %%
+
+plt.figure(figsize=(10,6))
+
+plt.barh(
+    
+)
+
+plt.title('Top 10 bairros mais caros (com volume relevante)')
+plt.xlabel('Preço médio')
+plt.ylabel('Bairro')
+
+plt.show()
+# %%
