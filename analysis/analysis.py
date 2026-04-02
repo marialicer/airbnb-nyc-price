@@ -298,3 +298,25 @@ plt.savefig("../img/centroides_clusters.png")
 
 plt.show()
 # %%
+
+# correlação entre variáveis
+
+numeric_df = df.select_dtypes(include=["int64","float64"])
+# %%
+
+plt.figure(figsize=(12,8))
+sns.heatmap(
+    numeric_df.corr(),
+    annot=True,
+    fmt=".2f",
+    cmap="YlOrBr"
+)
+
+plt.title("Mapa de calor de correlação entre variáveis")
+
+plt.tight_layout()
+
+plt.savefig("../img/mapa_de_calor_correlacao.png")
+
+plt.show()
+# %%
