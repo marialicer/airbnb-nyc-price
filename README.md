@@ -6,4 +6,3 @@ Esse projeto tem como objetivo responder as seguintes perguntas:
 - Qual o impacto da localização?
 - Reviews influenciam preço?
 - Existem perfis de Airbnbs (clusters)?
-- O que mais impacta o preço (modelo)?
