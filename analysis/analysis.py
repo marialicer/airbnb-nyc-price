@@ -9,6 +9,7 @@ import plotly.express as px
 
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
 # %%
 
 # carregando o df 
@@ -252,23 +253,51 @@ print(correlacao)
 
 # perfis de airbnbs (clusters)
 
-df_numerico = df_sem_outliers.drop(columns=[
-    'host_id',
-    'latitude',
-    'longitude'
-])
+features = ['price', 'minimum_nights', 'number_of_reviews',
+            'reviews_per_month', 'calculated_host_listings_count',
+            'availability_365', 'latitude', 'longitude']
 
-# %%
-
-df_numerico = df_numerico.select_dtypes(include=['int64', 'float64'])
+df_cluster = df_sem_outliers[features]
 
 # %%
 
 scaler = StandardScaler()
-scaled_data = scaler.fit_transform(df_numerico)
+scaled_data = scaler.fit_transform(df_cluster)
+
 # %%
 
-kmeans = KMeans(n_clusters=3, random_state=42) # Exemplo com K=3
+# descobrindo o melhor número de clusters
+
+# Método do Cotovelo
+
+inercia = []
+
+K = range(1, 10)
+
+for k in K:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_data)
+    inercia.append(kmeans.inertia_)
+
+plt.plot(K, inercia, marker='o')
+plt.xlabel('Número de clusters')
+plt.ylabel('Inércia')
+plt.title('Método do Cotovelo')
+plt.show()
+
+# %%
+
+# Método Silhueta
+
+for k in range(2, 10):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    labels = kmeans.fit_predict(scaled_data)
+    score = silhouette_score(scaled_data, labels)
+    print(f"k={k} → silhouette score: {score:.4f}")
+
+# %%
+
+kmeans = KMeans(n_clusters=3, random_state=42) 
 clusters = kmeans.fit_predict(scaled_data)
 # %%
 
@@ -277,14 +306,25 @@ df_sem_outliers['cluster'] = clusters
 # %%
 centroides = pd.DataFrame(
     kmeans.cluster_centers_,
-    columns=df_numerico.columns
+    columns=df_cluster.columns
 )
 
 centroides
 # %%
 
+# renomear clusters com base nos centroides
+
+df_sem_outliers['cluster'] = df_sem_outliers['cluster'].map({
+    0: 'Populares/Acessíveis',
+    1: 'Parados/Inativos',
+    2: 'Premium/Profissional'
+})
+
 df_sem_outliers.head()
+
 # %%
+
+centroides.index = ['Populares/Acessíveis', 'Parados/Inativos', 'Premium/Profissional']
 
 cores = ['#FFA500', '#FFD700', '#FF4500']
 
@@ -295,6 +335,29 @@ plt.legend(title='Clusters')
 plt.tight_layout()
 
 plt.savefig("../img/centroides_clusters.png")
+
+plt.show()
+
+# %%
+
+contagem_imoveis = df_sem_outliers['cluster'].value_counts()
+print(contagem_imoveis)
+
+# %%
+
+sns.scatterplot(
+    data=df_sem_outliers,
+    x='longitude',
+    y='latitude',
+    hue='cluster',
+    style='cluster',
+    palette='viridis',
+    s=40
+)
+
+plt.title('Clusters de Airbnbs em NYC')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
 
 plt.show()
 # %%
