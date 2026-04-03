@@ -309,7 +309,7 @@ distancias_k = distancias[:, -1]
 distancias_ordenadas = np.sort(distancias_k)
 
 plt.figure(figsize=(8,5))
-plt.plot(distancias_ordenadas)
+plt.plot(distancias_ordenadas, color='#FB8C00', linewidth=2)
 plt.title('Gráfico k-NN para escolha do eps')
 plt.xlabel('Pontos ordenados')
 plt.ylabel(f'Distância ao {k}º vizinho')
@@ -323,25 +323,28 @@ plt.show()
 
 # zoom na região do cotovelo para escolher melhor
 plt.figure(figsize=(8,5))
-plt.plot(distancias_ordenadas)
+
+plt.plot(distancias_ordenadas, color='#FB8C00', linewidth=2)
+
 plt.title('Gráfico k-NN - zoom no cotovelo')
 plt.xlabel('Pontos ordenados')
 plt.ylabel(f'Distância ao 9º vizinho')
+
 plt.ylim(0, 5)      
 plt.xlim(38000, 46000)  
+
 plt.grid(True)
 
 plt.savefig("../img/grafico_knn_eps_zoom.png")    
 
 plt.show()
-
 # %%
 
-for eps in [1.5, 2.0, 2.5, 3.0]:
-    labels = DBSCAN(eps=eps, min_samples=9).fit_predict(scaled_data)
-    n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-    n_outliers = (labels == -1).sum()
-    print(f"eps={eps} → clusters: {n_clusters} | outliers: {n_outliers}")
+# for eps in [1.5, 2.0, 2.5, 3.0]:
+#     labels = DBSCAN(eps=eps, min_samples=9).fit_predict(scaled_data)
+#     n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+#     n_outliers = (labels == -1).sum()
+#     print(f"eps={eps} → clusters: {n_clusters} | outliers: {n_outliers}")
 
 # %%
 
@@ -352,13 +355,22 @@ df_sem_outliers['cluster_dbscan'] = labels
 
 print(df_sem_outliers['cluster_dbscan'].value_counts())
 # %%
+
+cores = [
+    '#F9A825',  
+    '#F57F17',  
+    '#EF6C00',  
+    '#BF360C',  
+    '#5D2A00'  
+]
+
 sns.scatterplot(
      data=df_sem_outliers,
      x='longitude',
      y='latitude',
      hue='cluster_dbscan',
      style='cluster_dbscan',
-     palette='viridis',
+     palette=cores,
      s=40
  )
 
@@ -392,7 +404,7 @@ for k in K:
     kmeans.fit(scaled_data)
     inercia.append(kmeans.inertia_)
 
-plt.plot(K, inercia, marker='o')
+plt.plot(K, inercia, marker='o', color='#FB8C00')
 plt.xlabel('Número de clusters')
 plt.ylabel('Inércia')
 plt.title('Método do Cotovelo')
