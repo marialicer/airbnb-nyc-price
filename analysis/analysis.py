@@ -10,6 +10,8 @@ import plotly.express as px
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score
+from sklearn.neighbors import NearestNeighbors
+from sklearn.cluster import DBSCAN
 # %%
 
 # carregando o df 
@@ -289,11 +291,11 @@ plt.show()
 
 # Método Silhueta
 
-for k in range(2, 10):
-    kmeans = KMeans(n_clusters=k, random_state=42)
-    labels = kmeans.fit_predict(scaled_data)
-    score = silhouette_score(scaled_data, labels)
-    print(f"k={k} → silhouette score: {score:.4f}")
+#for k in range(2, 10):
+    #kmeans = KMeans(n_clusters=k, random_state=42)
+    #labels = kmeans.fit_predict(scaled_data)
+    #score = silhouette_score(scaled_data, labels)
+    #print(f"k={k} → silhouette score: {score:.4f}")
 
 # %%
 
@@ -383,3 +385,84 @@ plt.savefig("../img/mapa_de_calor_correlacao.png")
 
 plt.show()
 # %%
+
+# treinando modelo DBSCAN para comparar resultados
+
+k = 9
+nn = NearestNeighbors(n_neighbors=k)
+nn.fit(scaled_data)
+distancias, _ = nn.kneighbors(scaled_data)
+
+distancias_k = distancias[:, -1]
+
+distancias_ordenadas = np.sort(distancias_k)
+
+plt.figure(figsize=(8,5))
+plt.plot(distancias_ordenadas)
+plt.title('Gráfico k-NN para escolha do eps')
+plt.xlabel('Pontos ordenados')
+plt.ylabel(f'Distância ao {k}º vizinho')
+plt.grid(True)
+plt.show()
+
+# %%
+
+# zoom na região do cotovelo para escolher melhor
+plt.figure(figsize=(8,5))
+plt.plot(distancias_ordenadas)
+plt.title('Gráfico k-NN - zoom no cotovelo')
+plt.xlabel('Pontos ordenados')
+plt.ylabel(f'Distância ao 9º vizinho')
+plt.ylim(0, 5)      
+plt.xlim(38000, 46000)  
+plt.grid(True)
+plt.show()
+
+# %%
+
+#for eps in [1.5, 2.0, 2.5, 3.0]:
+    #labels = DBSCAN(eps=eps, min_samples=9).fit_predict(scaled_data)
+    #n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+    #n_outliers = (labels == -1).sum()
+    #print(f"eps={eps} → clusters: {n_clusters} | outliers: {n_outliers}")
+
+# %%
+
+# dbscan = DBSCAN(eps=2.0, min_samples=9)
+# labels = dbscan.fit_predict(scaled_data)
+
+# df_sem_outliers['cluster_dbscan'] = labels
+
+# print(df_sem_outliers['cluster_dbscan'].value_counts())
+# %%
+# sns.scatterplot(
+#     data=df_sem_outliers,
+#     x='longitude',
+#     y='latitude',
+#     hue='cluster_dbscan',
+#     style='cluster_dbscan',
+#     palette='viridis',
+#     s=40
+# )
+# %%
+
+# features_geo = ['latitude', 'longitude']
+# scaled_geo = StandardScaler().fit_transform(df_sem_outliers[features_geo])
+
+# labels = DBSCAN(eps=0.1, min_samples=9).fit_predict(scaled_geo)
+# print(pd.Series(labels).value_counts())
+# %%
+
+# DBSCAN - Tentativa de clustering 
+# 
+# Parâmetros testados:
+#   min_samples = 9 (n_features + 1)
+#   eps testados: 1.0, 1.5, 2.0, 2.5, 3.0 (via gráfico k-NN)
+#
+# Resultado: em todos os cenários, ~94-98% dos dados foram alocados
+# num único cluster, indicando que os imóveis estão distribuídos de 
+# forma homogênea pela cidade, sem regiões de densidade claramente distintas.
+#
+# Conclusão: o DBSCAN não é adequado para esse dataset.
+# O K-Means com k=3 foi mantido como modelo final, validado pelo
+# método do cotovelo e pela silhueta (score=0.2662).
