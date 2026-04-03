@@ -314,6 +314,9 @@ plt.title('Gráfico k-NN para escolha do eps')
 plt.xlabel('Pontos ordenados')
 plt.ylabel(f'Distância ao {k}º vizinho')
 plt.grid(True)
+
+plt.savefig("../img/grafico_knn_eps.png")
+
 plt.show()
 
 # %%
@@ -327,6 +330,9 @@ plt.ylabel(f'Distância ao 9º vizinho')
 plt.ylim(0, 5)      
 plt.xlim(38000, 46000)  
 plt.grid(True)
+
+plt.savefig("../img/grafico_knn_eps_zoom.png")    
+
 plt.show()
 
 # %%
@@ -355,6 +361,10 @@ print(df_sem_outliers['cluster_dbscan'].value_counts())
      palette='viridis',
      s=40
  )
+
+ plt.savefig("../img/clusters_dbscan_geograficos.png")  
+
+ plt.show()
 # %%
 
 features_geo = ['latitude', 'longitude']

@@ -128,12 +128,18 @@ Antes de optar pelo K-Means, foi testado o algoritmo DBSCAN para identificar agr
 
 - **Metodologia:** Utilizou-se o gráfico de K-Nearest Neighbors (k-NN) com k=9 para determinar o `eps` ideal, analisando o ponto de curvatura (cotovelo) das distâncias.
 
-![K-NN para escolha do eps](img/grafico_knn_eps.png)
+| Gráfico k-NN Original | Zoom no Cotovelo |
+|:---:|:---:|
+| ![K-NN para escolha do eps](img/grafico_knn_eps.png) | ![Zoom K-NN para escolha do eps](img/grafico_knn_eps_zoom.png) |
 
-- **Testes Realizados:** Foram testados valores de eps entre 1.5 e 3.0.
+
+- **Testes Realizados:** Foram testados valores de eps entre 1.5 e 3.0
+
 - **Resultado:** O modelo apresentou baixa performance para este dataset, alocando entre 94% e 98% dos dados em um único cluster (Cluster 0), enquanto o restante foi classificado como ruído (outliers).
 
-> A alta homogeneidade e a sobreposição das características dos imóveis em Nova York impediram que o DBSCAN encontrasse fronteiras de densidade claras. Por este motivo, o K-Means foi selecionado como o modelo final por oferecer uma segmentação mais interpretável para o negócio.
+![DBSCAN - Clusters geográficos](img/clusters_dbscan_geograficos.png)
+
+> O DBSCAN falhou em segmentar os dados de forma útil, pois a distribuição dos imóveis em Nova York é muito homogênea em termos de densidade. 98% dos dados foram alocados em um único grupo, impossibilitando a diferenciação de perfis. Por isso, seguimos com o K-Means, que segmentou o mercado de forma equilibrada em 3 perfis distintos.
 
 ---
 
@@ -167,15 +173,11 @@ Antes de optar pelo K-Means, foi testado o algoritmo DBSCAN para identificar agr
 
 ### Perfis dos Clusters
 
-![Perfis dos clusters](img/centroides_clusters.png)
-
 **Métricas médias por cluster**
 
-![Preço médio por cluster](img/preco_medio_cluster.png)
-
----
-
-![Métricas médias por cluster](img/metricas_cluster.png)
+| Preço Médio por Cluster | Métricas Médias por Cluster |
+|:---:|:---:|
+| ![Preço médio por cluster](img/preco_medio_cluster.png) | ![Métricas médias por cluster](img/metricas_cluster.png) |
 
 | Cluster | Preço médio | Reviews | Disponibilidade | Mínimo de noites |
 |---|---|---|---|---|
