@@ -119,6 +119,10 @@ plt.savefig("../img/distribuicao_preco_sem_outliers.png")
 plt.show()
 # %%
 
+df_sem_outliers['price'].describe()
+
+# %%
+
 # identificar e plotar os distritos com maior média de preços
 
 media_precos = df_sem_outliers.groupby('neighbourhood_group', as_index=False)['price'].mean()
@@ -246,11 +250,36 @@ plt.title('Relação entre número de reviews e preço')
 plt.xlabel('Número de reviews')
 plt.ylabel('Preço médio')
 
+plt.savefig("../img/relacao_reviews_preco.png")
+
 plt.show()
 # %%
 
 correlacao = df_sem_outliers['number_of_reviews'].corr(df_sem_outliers['price'])
 print(correlacao)
+# %%
+
+# correlação entre variáveis
+
+numeric_df = df.select_dtypes(include=["int64","float64"])
+# %%
+
+plt.figure(figsize=(12,8))
+sns.heatmap(
+    numeric_df.corr(),
+    annot=True,
+    fmt=".2f",
+    cmap="YlOrBr"
+)
+
+plt.title("Mapa de calor de correlação entre variáveis")
+
+plt.tight_layout()
+
+plt.savefig("../img/mapa_de_calor_correlacao.png")
+
+plt.show()
+
 # %%
 
 # perfis de airbnbs (clusters)
@@ -268,7 +297,75 @@ scaled_data = scaler.fit_transform(df_cluster)
 
 # %%
 
-# descobrindo o melhor número de clusters
+# testando modelo DBSCAN
+
+k = 9
+nn = NearestNeighbors(n_neighbors=k)
+nn.fit(scaled_data)
+distancias, _ = nn.kneighbors(scaled_data)
+
+distancias_k = distancias[:, -1]
+
+distancias_ordenadas = np.sort(distancias_k)
+
+plt.figure(figsize=(8,5))
+plt.plot(distancias_ordenadas)
+plt.title('Gráfico k-NN para escolha do eps')
+plt.xlabel('Pontos ordenados')
+plt.ylabel(f'Distância ao {k}º vizinho')
+plt.grid(True)
+plt.show()
+
+# %%
+
+# zoom na região do cotovelo para escolher melhor
+plt.figure(figsize=(8,5))
+plt.plot(distancias_ordenadas)
+plt.title('Gráfico k-NN - zoom no cotovelo')
+plt.xlabel('Pontos ordenados')
+plt.ylabel(f'Distância ao 9º vizinho')
+plt.ylim(0, 5)      
+plt.xlim(38000, 46000)  
+plt.grid(True)
+plt.show()
+
+# %%
+
+for eps in [1.5, 2.0, 2.5, 3.0]:
+    labels = DBSCAN(eps=eps, min_samples=9).fit_predict(scaled_data)
+    n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+    n_outliers = (labels == -1).sum()
+    print(f"eps={eps} → clusters: {n_clusters} | outliers: {n_outliers}")
+
+# %%
+
+dbscan = DBSCAN(eps=2.0, min_samples=9)
+labels = dbscan.fit_predict(scaled_data)
+
+df_sem_outliers['cluster_dbscan'] = labels
+
+print(df_sem_outliers['cluster_dbscan'].value_counts())
+# %%
+ sns.scatterplot(
+     data=df_sem_outliers,
+     x='longitude',
+     y='latitude',
+     hue='cluster_dbscan',
+     style='cluster_dbscan',
+     palette='viridis',
+     s=40
+ )
+# %%
+
+features_geo = ['latitude', 'longitude']
+scaled_geo = StandardScaler().fit_transform(df_sem_outliers[features_geo])
+
+labels = DBSCAN(eps=0.1, min_samples=9).fit_predict(scaled_geo)
+print(pd.Series(labels).value_counts())
+
+# %%
+
+# descobrindo o melhor número de clusters no K-Means
 
 # Método do Cotovelo
 
@@ -285,17 +382,20 @@ plt.plot(K, inercia, marker='o')
 plt.xlabel('Número de clusters')
 plt.ylabel('Inércia')
 plt.title('Método do Cotovelo')
+
+plt.savefig("../img/metodo_cotovelo.png")
+
 plt.show()
 
 # %%
 
 # Método Silhueta
 
-#for k in range(2, 10):
-    #kmeans = KMeans(n_clusters=k, random_state=42)
-    #labels = kmeans.fit_predict(scaled_data)
-    #score = silhouette_score(scaled_data, labels)
-    #print(f"k={k} → silhouette score: {score:.4f}")
+for k in range(2, 10):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    labels = kmeans.fit_predict(scaled_data)
+    score = silhouette_score(scaled_data, labels)
+    print(f"k={k} → silhouette score: {score:.4f}")
 
 # %%
 
@@ -347,13 +447,15 @@ print(contagem_imoveis)
 
 # %%
 
+cores = ['#FFA500', '#FFD700', '#FF4500']
+
 sns.scatterplot(
     data=df_sem_outliers,
     x='longitude',
     y='latitude',
     hue='cluster',
     style='cluster',
-    palette='viridis',
+    palette=cores,
     s=40
 )
 
@@ -361,111 +463,9 @@ plt.title('Clusters de Airbnbs em NYC')
 plt.xlabel('Longitude')
 plt.ylabel('Latitude')
 
-plt.show()
-# %%
-
-# correlação entre variáveis
-
-numeric_df = df.select_dtypes(include=["int64","float64"])
-# %%
-
-plt.figure(figsize=(12,8))
-sns.heatmap(
-    numeric_df.corr(),
-    annot=True,
-    fmt=".2f",
-    cmap="YlOrBr"
-)
-
-plt.title("Mapa de calor de correlação entre variáveis")
-
-plt.tight_layout()
-
-plt.savefig("../img/mapa_de_calor_correlacao.png")
+plt.savefig("../img/clusters_geograficos.png")
 
 plt.show()
-# %%
-
-# treinando modelo DBSCAN para comparar resultados
-
-k = 9
-nn = NearestNeighbors(n_neighbors=k)
-nn.fit(scaled_data)
-distancias, _ = nn.kneighbors(scaled_data)
-
-distancias_k = distancias[:, -1]
-
-distancias_ordenadas = np.sort(distancias_k)
-
-plt.figure(figsize=(8,5))
-plt.plot(distancias_ordenadas)
-plt.title('Gráfico k-NN para escolha do eps')
-plt.xlabel('Pontos ordenados')
-plt.ylabel(f'Distância ao {k}º vizinho')
-plt.grid(True)
-plt.show()
-
-# %%
-
-# zoom na região do cotovelo para escolher melhor
-plt.figure(figsize=(8,5))
-plt.plot(distancias_ordenadas)
-plt.title('Gráfico k-NN - zoom no cotovelo')
-plt.xlabel('Pontos ordenados')
-plt.ylabel(f'Distância ao 9º vizinho')
-plt.ylim(0, 5)      
-plt.xlim(38000, 46000)  
-plt.grid(True)
-plt.show()
-
-# %%
-
-#for eps in [1.5, 2.0, 2.5, 3.0]:
-    #labels = DBSCAN(eps=eps, min_samples=9).fit_predict(scaled_data)
-    #n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-    #n_outliers = (labels == -1).sum()
-    #print(f"eps={eps} → clusters: {n_clusters} | outliers: {n_outliers}")
-
-# %%
-
-# dbscan = DBSCAN(eps=2.0, min_samples=9)
-# labels = dbscan.fit_predict(scaled_data)
-
-# df_sem_outliers['cluster_dbscan'] = labels
-
-# print(df_sem_outliers['cluster_dbscan'].value_counts())
-# %%
-# sns.scatterplot(
-#     data=df_sem_outliers,
-#     x='longitude',
-#     y='latitude',
-#     hue='cluster_dbscan',
-#     style='cluster_dbscan',
-#     palette='viridis',
-#     s=40
-# )
-# %%
-
-# features_geo = ['latitude', 'longitude']
-# scaled_geo = StandardScaler().fit_transform(df_sem_outliers[features_geo])
-
-# labels = DBSCAN(eps=0.1, min_samples=9).fit_predict(scaled_geo)
-# print(pd.Series(labels).value_counts())
-# %%
-
-# DBSCAN - Tentativa de clustering 
-# 
-# Parâmetros testados:
-#   min_samples = 9 (n_features + 1)
-#   eps testados: 1.0, 1.5, 2.0, 2.5, 3.0 (via gráfico k-NN)
-#
-# Resultado: em todos os cenários, ~94-98% dos dados foram alocados
-# num único cluster, indicando que os imóveis estão distribuídos de 
-# forma homogênea pela cidade, sem regiões de densidade claramente distintas.
-#
-# Conclusão: o DBSCAN não é adequado para esse dataset.
-# O K-Means com k=3 foi mantido como modelo final, validado pelo
-# método do cotovelo e pela silhueta (score=0.2662).
 
 # %%
 
@@ -526,6 +526,8 @@ plt.show()
 
 # plotando distribuição por bairro dentro de cada cluster
 
+cores = ['#FFE082', '#FFB74D', '#FB8C00', '#E65100', '#8D3C00']
+
 bairros = pd.crosstab(
     df_sem_outliers['cluster'],
     df_sem_outliers['neighbourhood_group'],
@@ -535,7 +537,7 @@ bairros = pd.crosstab(
 bairros.plot(
     kind='bar',
     figsize=(10, 6),
-    colormap='YlOrBr'
+    color=cores
 )
 
 plt.title('Distribuição por bairro dentro de cada cluster')
@@ -545,6 +547,7 @@ plt.xticks(rotation=0, ha='center')
 plt.legend(title='Bairro', bbox_to_anchor=(1.05, 1))
 plt.tight_layout()
 plt.savefig("../img/distribuicao_bairro_cluster.png")
+
 plt.show()
 # %%
 
