@@ -466,3 +466,131 @@ plt.show()
 # Conclusão: o DBSCAN não é adequado para esse dataset.
 # O K-Means com k=3 foi mantido como modelo final, validado pelo
 # método do cotovelo e pela silhueta (score=0.2662).
+
+# %%
+
+# comparar métricas dos clusters k-means
+
+df_sem_outliers.groupby('cluster')[
+    ['price', 'minimum_nights', 'number_of_reviews',
+            'reviews_per_month', 'calculated_host_listings_count',
+            'availability_365', 'latitude', 'longitude']
+].mean().round(2)
+# %%
+
+# distribuição por tipo de quarto
+pd.crosstab(
+    df_sem_outliers['cluster'], 
+    df_sem_outliers['room_type'], 
+    normalize='index'
+) * 100
+# %%
+pd.crosstab(
+    df_sem_outliers['cluster'], 
+    df_sem_outliers['neighbourhood_group'], 
+    normalize='index'
+) * 100
+# %%
+
+# plotando preço médio por cluster para comparação
+
+media_preco = df_sem_outliers.groupby('cluster')['price'].mean().reset_index()
+media_preco = media_preco.sort_values('price', ascending=False)
+
+plt.figure(figsize=(8,5))
+
+cores = ['#FF4500', '#FFA500', '#FFD700']
+
+ax = sns.barplot(
+    data=media_preco,
+    x='cluster',
+    y='price',
+    palette=cores
+)
+
+for p in ax.patches:
+    ax.text(
+        p.get_x() + p.get_width() / 2,
+        p.get_height() + 0.5,
+        f'${p.get_height():.2f}',
+        ha='center'
+    )
+
+plt.title('Preço médio por cluster')
+plt.xlabel('Cluster')
+plt.ylabel('Preço médio ($)')
+plt.tight_layout()
+plt.savefig("../img/preco_medio_cluster.png")
+plt.show()
+# %%
+
+# plotando distribuição por bairro dentro de cada cluster
+
+bairros = pd.crosstab(
+    df_sem_outliers['cluster'],
+    df_sem_outliers['neighbourhood_group'],
+    normalize='index'
+) * 100
+
+bairros.plot(
+    kind='bar',
+    figsize=(10, 6),
+    colormap='YlOrBr'
+)
+
+plt.title('Distribuição por bairro dentro de cada cluster')
+plt.xlabel('Cluster')
+plt.ylabel('%')
+plt.xticks(rotation=0, ha='center')
+plt.legend(title='Bairro', bbox_to_anchor=(1.05, 1))
+plt.tight_layout()
+plt.savefig("../img/distribuicao_bairro_cluster.png")
+plt.show()
+# %%
+
+# plotando métricas por cluster para comparação
+
+fig, axes = plt.subplots(1, 3, figsize=(14, 5))
+
+metricas = {
+    'number_of_reviews': 'Número de reviews',
+    'availability_365': 'Disponibilidade (dias/ano)',
+    'minimum_nights': 'Mínimo de noites'
+}
+
+cores_cluster = {
+    'Premium/Profissional': '#FF4500',
+    'Parados/Inativos': '#FFA500',
+    'Populares/Acessíveis': '#FFD700'
+}
+
+for ax, (coluna, titulo) in zip(axes, metricas.items()):
+    media = df_sem_outliers.groupby('cluster')[coluna].mean().reset_index()
+    
+    sns.barplot(
+        data=media,
+        x='cluster',
+        y=coluna,
+        palette=cores_cluster,
+        ax=ax
+    )
+    
+    for p in ax.patches:
+        ax.text(
+            p.get_x() + p.get_width() / 2,
+            p.get_height() + 0.5,
+            f'{p.get_height():.1f}',
+            ha='center',
+            fontsize=9
+        )
+    
+    ax.set_title(titulo)
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+    ax.tick_params(axis='x', rotation=15)
+
+plt.suptitle('Métricas médias por cluster', fontsize=14)
+plt.tight_layout()
+plt.savefig("../img/metricas_cluster.png")
+plt.show()
+# %%
