@@ -352,7 +352,7 @@ df_sem_outliers['cluster_dbscan'] = labels
 
 print(df_sem_outliers['cluster_dbscan'].value_counts())
 # %%
- sns.scatterplot(
+sns.scatterplot(
      data=df_sem_outliers,
      x='longitude',
      y='latitude',
@@ -362,9 +362,13 @@ print(df_sem_outliers['cluster_dbscan'].value_counts())
      s=40
  )
 
- plt.savefig("../img/clusters_dbscan_geograficos.png")  
+plt.title('DBSCAN - Clusters geográficos')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
 
- plt.show()
+plt.savefig("../img/clusters_dbscan_geograficos.png")  
+
+plt.show()
 # %%
 
 features_geo = ['latitude', 'longitude']
