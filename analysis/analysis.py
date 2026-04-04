@@ -340,11 +340,11 @@ plt.savefig("../img/grafico_knn_eps_zoom.png")
 plt.show()
 # %%
 
-# for eps in [1.5, 2.0, 2.5, 3.0]:
-#     labels = DBSCAN(eps=eps, min_samples=9).fit_predict(scaled_data)
-#     n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-#     n_outliers = (labels == -1).sum()
-#     print(f"eps={eps} → clusters: {n_clusters} | outliers: {n_outliers}")
+for eps in [1.5, 2.0, 2.5, 3.0]:
+labels = DBSCAN(eps=eps, min_samples=9).fit_predict(scaled_data)
+n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+n_outliers = (labels == -1).sum()
+print(f"eps={eps} → clusters: {n_clusters} | outliers: {n_outliers}")
 
 # %%
 
