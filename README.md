@@ -1,16 +1,19 @@
 # Airbnb NYC / Análise Exploratória e Clusterização
 
-Análise exploratória de dados (EDA) e clusterização de anúncios do Airbnb em Nova York, com foco em identificar perfis de imóveis e padrões de comportamento dos hosts.
+Identificação de perfis de imóveis e padrões de comportamento de hosts no mercado de Nova York (2019)
+
+## Contexto de Negócio
+
+- O mercado de aluguel por temporada em Nova York é altamente dinâmico e competitivo, com mais de 48 mil anúncios ativos em 2019
+- Empresas de gestão de imóveis e hosts independentes enfrentam dificuldades para entender como precificar, posicionar e disponibilizar seus imóveis de forma estratégica
+- Sem uma visão clara dos diferentes perfis de anúncios, é difícil identificar oportunidades de profissionalização e crescimento no mercado
 
 ## Objetivo do projeto
 
-Investigar o mercado de Airbnb em Nova York a partir dos dados de 2019, buscando responder:
-
-- Como os preços se distribuem pela cidade?
-- Quais bairros e distritos concentram os imóveis mais caros?
-- Existe relação entre número de reviews e preço?
-- É possível segmentar os anúncios em perfis distintos?
-- Quais características definem cada perfil de imóvel?
+- Investigar como os preços se distribuem pela cidade e quais bairros e distritos concentram os imóveis mais caros
+- Entender se existe relação entre número de reviews e preço dos imóveis
+- Segmentar os anúncios em perfis distintos a partir de algoritmos de clusterização
+- Identificar as características que definem cada perfil e extrair oportunidades de negócio
 
 ## Dataset
 
