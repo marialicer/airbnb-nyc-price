@@ -1,4 +1,4 @@
-# 🏠 Airbnb NYC / Análise Exploratória e Clusterização
+# Airbnb NYC / Análise Exploratória e Clusterização
 
 Análise exploratória de dados (EDA) e clusterização de anúncios do Airbnb em Nova York, com foco em identificar perfis de imóveis e padrões de comportamento dos hosts.
 
